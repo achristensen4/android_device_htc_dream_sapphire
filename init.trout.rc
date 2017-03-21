@@ -16,8 +16,8 @@ on early-init
     device mtd@misc 0460 radio diag
 
 # Set timeout value for rmnet stats.
-    write /sys/devices/virtual/net/rmnet0/timeout_suspend 5000000
-    write /sys/devices/virtual/net/rmnet0/timeout 18000000
+    write /sys/devices/virtual/net/rmnet0/timeout_suspend 0
+    write /sys/devices/virtual/net/rmnet0/timeout 0
 
 on boot
 # unmap left alt to avoid console switch
@@ -48,7 +48,7 @@ on boot
 
     # cpufreq configurations
     write /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq 245760
-    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor ondemand
+    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor powersave
     write /sys/devices/system/cpu/cpufreq/ondemand/sampling_rate 40000
     write /sys/devices/system/cpu/cpufreq/ondemand/up_threshold 85
 
@@ -60,34 +60,29 @@ service akmd /system/bin/akmd
     user compass
     group compass misc input
 
-service wlan_loader /system/bin/wlan_loader \
-    -f /system/etc/wifi/Fw1251r1c.bin -e /proc/calibration \
+service wlan_loader /system/bin/wlan_loader
+    -f /system/etc/wifi/Fw1251r1c.bin -e /proc/calibration
     -i /system/etc/wifi/tiwlan.ini
-    disabled
     oneshot
 
-service wpa_supplicant /system/bin/wpa_supplicant \
+service wpa_supplicant /system/bin/wpa_supplicant
     -Dtiwlan0 -itiwlan0 -c/data/misc/wifi/wpa_supplicant.conf -q
 #   we will start as root and wpa_supplicant will switch to user wifi
 #   after setting up the capabilities required for WEXT
-#   user wifi
-#   group wifi inet keystore
+    user wifi
+    group wifi inet keystore
     socket wpa_tiwlan0 dgram 660 wifi wifi
-    disabled
     oneshot
 
 service dhcpcd /system/bin/dhcpcd -ABKL
-    disabled
     oneshot
 
-service hciattach /system/bin/hciattach \
+service hciattach /system/bin/hciattach
     -n -s 115200 /dev/ttyHS0 texasalt 4000000 flow
     user bluetooth
     group bluetooth net_bt_admin
-    disabled
 
 # bugreport is triggered by the KEY_LEFTSHIFT and KEY_MENU keycodes
 service bugreport /system/bin/dumpstate -d -v -o /sdcard/bugreports/bugreport
-    disabled
     oneshot
     keycodes 42 139
